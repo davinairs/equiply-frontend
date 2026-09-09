@@ -10,12 +10,15 @@ import NotFoundPage from "./pages/errors/NotFoundPage";
 import ForbiddenPage from "./pages/errors/ForbiddenPage";
 
 import DashboardPage from "./pages/admin/DashboardPage";
-import AdminEquipmentPage from "./pages/admin/AdminEquipmentPage";
 import AdminBorrowRequestsPage from "./pages/admin/AdminBorrowRequestsPage";
+import AdminEquipmentPage from "./pages/admin/AdminEquipmentPage";
 import UserManagementPage from "./pages/admin/UserManagementPage";
 import CategoryPage from "./pages/admin/CategoryPage";
-import CompanyPage from "./pages/admin/CompanyPage";
+import UnitManagementPage from "./pages/admin/UnitPage";
 import ReportPage from "./pages/admin/ReportPage";
+
+import CompanyPage from "./pages/superadmin/SuperAdminCompanyPage";
+import SuperAdminUsersPage from "./pages/superadmin/SuperAdminUsersPage";
 
 import UserEquipmentPage from "./pages/user/UserEquipmentPage";
 import UserBorrowRequestsPage from "./pages/user/UserBorrowRequestsPage";
@@ -28,8 +31,13 @@ function RootRedirect() {
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-
-  return <Navigate to={role === "admin" ? "/admin/dashboard" : "/user/equipments"} replace />;
+  if (role === "superadmin") {
+    return <Navigate to="/superadmin/companies" replace />;
+  }
+  if (role === "admin") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  return <Navigate to="/user/equipment" replace />;
 }
 
 function ProtectedRoute({ children, allowedRole }) {
@@ -39,7 +47,6 @@ function ProtectedRoute({ children, allowedRole }) {
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-
   if (allowedRole && role !== allowedRole) {
     return <Navigate to="/forbidden" replace />;
   }
@@ -50,7 +57,7 @@ function ProtectedRoute({ children, allowedRole }) {
 function App() {
   return (
     <BrowserRouter>
-    <Toaster position="top-right" />
+      <Toaster position="top-right" />
       <Routes>
         {/* Root & Redirect */}
         <Route path="/" element={<RootRedirect />} />
@@ -74,6 +81,24 @@ function App() {
           }
         />
 
+        {/* Super Admin Routes */}
+        <Route
+          path="/superadmin/companies"
+          element={
+            <ProtectedRoute allowedRole="superadmin">
+              <CompanyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/superadmin/users"
+          element={
+            <ProtectedRoute allowedRole="superadmin">
+              <SuperAdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Admin Routes */}
         <Route
           path="/admin/dashboard"
@@ -92,7 +117,7 @@ function App() {
           }
         />
         <Route
-          path="/admin/equipments"
+          path="/admin/equipment"
           element={
             <ProtectedRoute allowedRole="admin">
               <AdminEquipmentPage />
@@ -116,10 +141,10 @@ function App() {
           }
         />
         <Route
-          path="/admin/companies"
+          path="/admin/units"
           element={
             <ProtectedRoute allowedRole="admin">
-              <CompanyPage />
+              <UnitManagementPage />
             </ProtectedRoute>
           }
         />
@@ -134,7 +159,7 @@ function App() {
 
         {/* User Routes */}
         <Route
-          path="/user/equipments"
+          path="/user/equipment"
           element={
             <ProtectedRoute allowedRole="user">
               <UserEquipmentPage />

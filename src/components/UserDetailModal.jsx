@@ -11,7 +11,9 @@ function formatDate(dateStr) {
   return `${day}/${month}/${year}`;
 }
 
-function UserDetailModal({ user, onClose }) {
+function UserDetailModal({ user, onClose, groupLabel = "Unit", groupValue }) {
+  const resolvedGroupValue = groupValue ?? user?.unitName ?? "-";
+
   return (
     <AnimatePresence>
       {user && (
@@ -29,7 +31,7 @@ function UserDetailModal({ user, onClose }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="relative bg-white rounded-2xl border border-slate-100 max-w-md w-full p-4 sm:p-6 text-left shadow-xl z-10 max-h-[90vh] overflow-y-auto"
+            className="relative bg-primary-light text-text-primary rounded-2xl border border-stroke max-w-md w-full p-4 sm:p-6 text-left shadow-xl z-10 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
@@ -67,39 +69,33 @@ function UserDetailModal({ user, onClose }) {
 
             <div className="space-y-3 text-(length:--font-size-body-sm)">
               <div className="grid grid-cols-[80px_1fr] gap-2">
-                <span className="text-text-muted text-left">
-                  Email
-                </span>
+                <span className="text-text-muted text-left">Email</span>
                 <span className="font-medium text-text-primary text-left truncate">
                   {user.email}
                 </span>
               </div>
               <div className="grid grid-cols-[80px_1fr] gap-2">
-                <span className="text-text-muted text-left">
-                  Company
-                </span>
+                <span className="text-text-muted text-left">{groupLabel}</span>
                 <span className="font-medium text-text-primary text-left wrap-break-word">
-                  {user.companyName || "-"}
+                  {resolvedGroupValue}
                 </span>
               </div>
-              <div className="grid grid-cols-[80px_1fr] gap-2">
-                <span className="text-text-muted text-left">
-                  Role
-                </span>
-                <span className="font-medium text-text-primary text-left capitalize">
-                  {user.role}
-                </span>
-              </div>
+              {user.role && (
+                <div className="grid grid-cols-[80px_1fr] gap-2">
+                  <span className="text-text-muted text-left">Role</span>
+                  <span className="font-medium text-text-primary text-left lowercase">
+                    {user.role}
+                  </span>
+                </div>
+              )}
               <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
-                <span className="text-text-muted text-left">
-                  Status
-                </span>
+                <span className="text-text-muted text-left">Status</span>
                 <div className="text-left">
                   <span
-                    className={`inline-block px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium capitalize ${
+                    className={`inline-block px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium lowercase ${
                       user.status === "active"
                         ? "bg-success-light text-success"
-                        : "bg-slate-100 text-slate-500"
+                        : "bg-error-light text-error"
                     }`}
                   >
                     {user.status}
@@ -107,9 +103,7 @@ function UserDetailModal({ user, onClose }) {
                 </div>
               </div>
               <div className="grid grid-cols-[80px_1fr] gap-2">
-                <span className="text-text-muted text-left">
-                  Joined Date
-                </span>
+                <span className="text-text-muted text-left">Joined Date</span>
                 <span className="font-medium text-text-primary text-left">
                   {formatDate(user.createdAt || user.joinedDate)}
                 </span>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, ChevronDown, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import BorrowRequestModal from "../../components/BorrowRequestModal";
 import EquipmentDetailModal from "../../components/EquipmentDetailModal";
@@ -22,7 +22,7 @@ const conditionBadge = {
 };
 
 function UserEquipmentPage() {
-  const [equipments, setEquipments] = useState([]);
+  const [equipment, setEquipment] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,10 +49,10 @@ function UserEquipmentPage() {
   const fetchData = async () => {
     try {
       const [eqRes, catRes] = await Promise.all([
-        api.get("/equipments"),
+        api.get("/equipment"),
         api.get("/categories"),
       ]);
-      setEquipments(eqRes.data);
+      setEquipment(eqRes.data);
       setCategories(catRes.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load equipment data");
@@ -60,15 +60,17 @@ function UserEquipmentPage() {
       setLoading(false);
     }
   };
-  
+
   const getCategoryName = (eq) => {
     if (eq.category?.categoryName) return eq.category.categoryName;
     if (eq.categoryName) return eq.categoryName;
-    const found = categories.find((c) => String(c.id) === String(eq.categoryId));
+    const found = categories.find(
+      (c) => String(c.id) === String(eq.categoryId),
+    );
     return found ? found.categoryName : "";
   };
 
-let filteredEquipments = equipments.filter((eq) => {
+  let filteredEquipment = equipment.filter((eq) => {
     if (filterCategory && String(eq.categoryId) !== filterCategory)
       return false;
     if (filterCondition && eq.equipmentCondition !== filterCondition)
@@ -86,21 +88,18 @@ let filteredEquipments = equipments.filter((eq) => {
     return true;
   });
 
-  const sortedEquipments = [...filteredEquipments].sort((a, b) => {
+  const sortedEquipment = [...filteredEquipment].sort((a, b) => {
     const valA = a.createdAt || a.id || 0;
     const valB = b.createdAt || b.id || 0;
 
-    if (valA < valB) return 1; 
+    if (valA < valB) return 1;
     if (valA > valB) return -1;
     return 0;
   });
 
-  const totalPages = Math.max(
-    Math.ceil(sortedEquipments.length / PAGE_SIZE),
-    1,
-  );
-  
-  const paginatedEquipments = sortedEquipments.slice(
+  const totalPages = Math.max(Math.ceil(sortedEquipment.length / PAGE_SIZE), 1);
+
+  const paginatedEquipment = sortedEquipment.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE,
   );
@@ -137,7 +136,7 @@ let filteredEquipments = equipments.filter((eq) => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-(length:--font-size-h2) font-semibold text-primary">
-            Equipments Catalog
+            Equipment Catalog
           </h2>
           <p className="text-(length:--font-size-body-lg) text-text-muted mt-1">
             Browse and borrow available equipment for your needs.
@@ -158,7 +157,7 @@ let filteredEquipments = equipments.filter((eq) => {
               setOpenCondition(false);
               setOpenStatus(false);
             }}
-            className="flex items-center justify-between gap-4 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-sm cursor-pointer min-w-35"
+            className="flex items-center justify-between gap-4 bg-primary-light border border-stroke rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-xs cursor-pointer min-w-35"
           >
             <span>{selectedCategoryName}</span>
             <ChevronDown
@@ -174,7 +173,7 @@ let filteredEquipments = equipments.filter((eq) => {
                 animate={{ opacity: 1, y: 4, scale: 1 }}
                 exit={{ opacity: 0, y: -5, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 top-full z-30 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
+                className="absolute left-0 top-full z-30 bg-primary-light border border-stroke rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
               >
                 <div
                   onClick={() => {
@@ -217,7 +216,7 @@ let filteredEquipments = equipments.filter((eq) => {
               setOpenCategory(false);
               setOpenStatus(false);
             }}
-            className="flex items-center justify-between gap-4 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-sm cursor-pointer min-w-35"
+            className="flex items-center justify-between gap-4 bg-primary-light border border-stroke rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-xs cursor-pointer min-w-35"
           >
             <span>{selectedConditionName}</span>
             <ChevronDown
@@ -233,7 +232,7 @@ let filteredEquipments = equipments.filter((eq) => {
                 animate={{ opacity: 1, y: 4, scale: 1 }}
                 exit={{ opacity: 0, y: -5, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 top-full z-30 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
+                className="absolute left-0 top-full z-30 bg-primary-light border border-stroke rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
               >
                 {[
                   { label: "All Condition", value: "" },
@@ -268,7 +267,7 @@ let filteredEquipments = equipments.filter((eq) => {
               setOpenCategory(false);
               setOpenCondition(false);
             }}
-            className="flex items-center justify-between gap-4 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-sm cursor-pointer min-w-35"
+            className="flex items-center justify-between gap-4 bg-primary-light border border-stroke rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-xs cursor-pointer min-w-35"
           >
             <span>{selectedStatusName}</span>
             <ChevronDown
@@ -283,7 +282,7 @@ let filteredEquipments = equipments.filter((eq) => {
                 animate={{ opacity: 1, y: 4, scale: 1 }}
                 exit={{ opacity: 0, y: -5, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 top-full z-30 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
+                className="absolute left-0 top-full z-30 bg-primary-light border border-stroke rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
               >
                 {[
                   { label: "All Status", value: "" },
@@ -313,15 +312,16 @@ let filteredEquipments = equipments.filter((eq) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <AnimatePresence mode="wait">
-          {paginatedEquipments.map((eq, idx) => (
+        <AnimatePresence>
+          {paginatedEquipment.map((eq, idx) => (
             <motion.div
               key={eq.id}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2, delay: idx * 0.03 }}
-              className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+              onClick={() => setDetailItem(eq)}
+              className="bg-primary-light rounded-2xl border border-stroke p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between cursor-pointer"
             >
               <div>
                 <div className="relative w-full h-48 bg-slate-50 rounded-xl overflow-hidden mb-4 flex items-center justify-center">
@@ -364,24 +364,22 @@ let filteredEquipments = equipments.filter((eq) => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
-                <button
-                  onClick={() => setDetailItem(eq)}
-                  className="flex-1 flex items-center justify-center gap-1.5 border border-slate-200 text-text-primary py-2 rounded-xl text-(length:--font-size-body-sm) font-medium hover:text-primary cursor-pointer transition-colors"
-                >
-                  <Eye size={15} /> Detail
-                </button>
+              <div>
                 {eq.equipmentStatus === "available" ? (
                   <button
-                    onClick={() => setBorrowItem(eq)}
-                    className="flex-1 bg-primary text-white py-2 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-90 cursor-pointer transition-opacity text-center shadow-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setBorrowItem(eq);
+                    }}
+                    className="w-full bg-primary text-primary-light py-2 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-90 cursor-pointer transition-opacity text-center shadow-xs"
                   >
                     Borrow
                   </button>
                 ) : (
                   <button
                     disabled
-                    className="flex-1 bg-slate-100 text-slate-400 py-2 rounded-xl text-(length:--font-size-body-sm) font-medium cursor-not-allowed text-center"
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full bg-gray-200 text-primary-light py-2 rounded-xl text-(length:--font-size-body-sm) font-medium cursor-not-allowed text-center"
                   >
                     Unavailable
                   </button>
@@ -391,13 +389,13 @@ let filteredEquipments = equipments.filter((eq) => {
           ))}
         </AnimatePresence>
       </div>
-      {paginatedEquipments.length === 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 p-8 sm:p-12 text-center text-text-muted mt-4">
-          No equipment found
+      {paginatedEquipment.length === 0 && (
+        <div className="bg-primary-light rounded-2xl border border-stroke p-8 sm:p-12 text-center text-text-muted mt-4">
+          No Equipment Found
         </div>
       )}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-2xl border border-slate-100 px-4 sm:px-6 py-4 mt-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-primary-light rounded-2xl border border-stroke px-4 sm:px-6 py-4 mt-6 shadow-xs">
           <p className="text-(length:--font-size-body-sm) text-text-muted">
             Page {page} of {totalPages}
           </p>
@@ -405,14 +403,14 @@ let filteredEquipments = equipments.filter((eq) => {
             <button
               onClick={() => setPage((p) => Math.max(p - 1, 1))}
               disabled={page === 1}
-              className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-body-sm) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-body-sm) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
             >
               <ChevronLeft size={14} /> Prev
             </button>
             <button
               onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
               disabled={page === totalPages}
-              className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-body-sm) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-body-sm) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
             >
               Next <ChevronRight size={14} />
             </button>

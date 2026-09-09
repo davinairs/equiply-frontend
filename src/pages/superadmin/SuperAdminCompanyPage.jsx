@@ -10,7 +10,7 @@ const PAGE_SIZE = 10;
 
 function CompanyPage() {
   const [companies, setCompanies] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
@@ -32,12 +32,12 @@ function CompanyPage() {
 
   const fetchData = async () => {
     try {
-      const [compRes, userRes] = await Promise.all([
+      const [compRes, adminRes] = await Promise.all([
         api.get("/companies"),
-        api.get("/users"),
+        api.get("/admins").catch(() => ({ data: [] })),
       ]);
       setCompanies(compRes.data);
-      setUsers(userRes.data);
+      setAdmins(adminRes.data);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to load data");
     } finally {
@@ -45,8 +45,14 @@ function CompanyPage() {
     }
   };
 
-  const getUserCount = (companyName) =>
-    users.filter((u) => u.companyName === companyName).length;
+  const getAdminsCount = (company) => {
+    const targetCompName = (company.companyName || "").trim().toLowerCase();
+
+    return admins.filter((a) => {
+      const adminCompName = (a.companyName || "").trim().toLowerCase();
+      return adminCompName && adminCompName === targetCompName;
+    }).length;
+  };
 
   const openCreateForm = () => {
     setEditingId(null);
@@ -81,7 +87,8 @@ function CompanyPage() {
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete company "${name}"?`)) return;
+    if (!window.confirm(`Are you sure you want to delete company "${name}"?`))
+      return;
     try {
       await api.delete(`/companies/${id}`);
       toast.success("Company deleted successfully!");
@@ -90,7 +97,7 @@ function CompanyPage() {
       toast.error(err.response?.data?.message || "Failed to delete company");
     }
   };
-  
+
   const filteredCompanies = companies.filter((c) => {
     if (!searchQuery) return true;
     return c.companyName?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -100,13 +107,16 @@ function CompanyPage() {
     const valA = a.createdAt || a.id || 0;
     const valB = b.createdAt || b.id || 0;
 
-    if (valA < valB) return 1; 
+    if (valA < valB) return 1;
     if (valA > valB) return -1;
     return 0;
   });
 
-  const totalPages = Math.max(Math.ceil(sortedCompanies.length / PAGE_SIZE), 1);
-  
+  const totalPages = Math.max(
+    Math.ceil(sortedCompanies.length / PAGE_SIZE),
+    1,
+  );
+
   const paginatedCompanies = sortedCompanies.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE,
@@ -132,9 +142,9 @@ function CompanyPage() {
     >
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-(length:--font-size-h1) font-semibold text-primary">
+          <h2 className="text-(length:--font-size-h2) font-semibold text-primary">
             Companies
-          </h1>
+          </h2>
           <p className="text-(length:--font-size-body-lg) text-text-muted mt-1">
             Manage company information and assigned assets.
             {searchQuery && (
@@ -148,7 +158,7 @@ function CompanyPage() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={openCreateForm}
-          className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2.5 rounded-2xl text-(length:--font-size-body-sm) font-medium hover:opacity-95 shadow-xs cursor-pointer self-start sm:self-auto"
+          className="flex items-center justify-center gap-2 bg-primary text-primary-light px-4 py-2.5 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-95 shadow-xs cursor-pointer self-start sm:self-auto"
         >
           <Plus size={16} /> Add Company
         </motion.button>
@@ -168,7 +178,7 @@ function CompanyPage() {
         initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-6 shadow-xs mt-6"
+        className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-6 shadow-xs mt-6"
       >
         <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
           Company
@@ -177,52 +187,59 @@ function CompanyPage() {
           {filteredCompanies.length} Companies
         </p>
         <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-          <table className="w-full min-w-120 text-left text-(length:--font-size-body-sm)">
-            <thead className="text-text-muted border-b border-slate-100">
+          <table className="w-full min-w-120 text-left text-(length:--font-size-body-sm) font-medium">
+            <thead className="text-text-muted border-b border-stroke font-normal">
               <tr>
-                <th className="pb-3 py-3 font-medium pl-3 w-[37%]">Company Name</th>
-                <th className="pb-3 py-3 font-medium w-[33%]">Users</th>
-                <th className="pb-3 py-3 font-medium pr-3 w-[30%]">Action</th>
+                <th className="py-3 px-4 font-medium w-[50%]">Company</th>
+                <th className="py-3 px-4 font-medium w-[25%]">Admins</th>
+                <th className="py-3 px-4 font-medium w-[25%]">Action</th>
               </tr>
             </thead>
             <tbody>
               <AnimatePresence mode="wait">
-                {paginatedCompanies.map((c, idx) => (
-                  <motion.tr
-                    key={c.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2, delay: idx * 0.03 }}
-                    className="border-b border-slate-50 text-text-primary hover:bg-slate-50/50 transition-colors"
-                  >
-                    <td className="py-4 pl-3 font-medium">{c.companyName}</td>
-                    <td className="py-4 font-medium">{getUserCount(c.companyName)} users</td>
-                    <td className="py-4 pr-3">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => openEditForm(c)}
-                          className="text-text-muted hover:text-primary transition-colors cursor-pointer"
-                          title="Edit"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(c.id, c.companyName)}
-                          className="text-text-muted hover:text-error transition-colors cursor-pointer"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                {paginatedCompanies.map((c, idx) => {
+                  const companyDisplayName = c.companyName;
+                  return (
+                    <motion.tr
+                      key={c.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2, delay: idx * 0.03 }}
+                      className="border-b border-stroke text-text-primary hover:bg-slate-50/50 transition-colors"
+                    >
+                      <td className="py-4 px-4">{companyDisplayName}</td>
+                      <td className="py-4 px-4">{getAdminsCount(c)} admins</td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-4">
+                          <button
+                            type="button"
+                            onClick={() => openEditForm(c)}
+                            className="text-success cursor-pointer"
+                            title="Edit"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDelete(c.id, companyDisplayName)
+                            }
+                            className="text-error cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
               </AnimatePresence>
               {paginatedCompanies.length === 0 && (
                 <tr>
                   <td colSpan={3} className="p-6 text-center text-text-muted">
-                    No company found
+                    No Company Found
                   </td>
                 </tr>
               )}
@@ -230,22 +247,24 @@ function CompanyPage() {
           </table>
         </div>
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 sm:px-5 py-4 border-t border-slate-50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 sm:px-5 py-4 border-t border-stroke">
             <p className="text-(length:--font-size-caption) text-text-muted">
               Page {page} of {totalPages}
             </p>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 <ChevronLeft size={14} /> Prev
               </button>
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                 disabled={page === totalPages}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 Next <ChevronRight size={14} />
               </button>

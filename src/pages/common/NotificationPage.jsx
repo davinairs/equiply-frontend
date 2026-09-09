@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCheck } from "lucide-react";
+import toast from "react-hot-toast";
 import api from "../../services/api";
 
 const PAGE_SIZE = 10;
@@ -22,7 +23,7 @@ function NotificationPage() {
       const res = await api.get("/notifications");
       setNotifications(res.data);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to load notifications");
+      toast.error(err.response?.data?.message || "Failed to load notifications");
     } finally {
       setLoading(false);
     }
@@ -39,13 +40,25 @@ function NotificationPage() {
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.patch("/notifications/mark-all-read");
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      toast.success("All notifications marked as read");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Failed to mark all as read",
+      );
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this notification?")) return;
     try {
       await api.delete(`/notifications/${id}`);
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete notification");
+      toast.error(err.response?.data?.message || "Failed to delete notification");
     }
   };
 
@@ -62,6 +75,17 @@ function NotificationPage() {
       navigate(`${basePath}?highlight=${notif.borrowRequestId}`);
     }
   };
+
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    const optionsDate = { day: "numeric", month: "numeric", year: "numeric" };
+    const optionsTime = { hour: "2-digit", minute: "2-digit", hour12: false };
+    const formattedDate = date.toLocaleDateString("id-ID", optionsDate);
+    const formattedTime = date.toLocaleTimeString("id-ID", optionsTime).replace(".", ":");
+    return `${formattedDate}, ${formattedTime}`;
+  };
+
+  const hasUnread = notifications.some((n) => !n.isRead);
 
   const totalPages = Math.max(Math.ceil(notifications.length / PAGE_SIZE), 1);
   const paginatedNotifications = notifications.slice(
@@ -91,6 +115,18 @@ function NotificationPage() {
             Stay updated with your latest alerts and requests.
           </p>
         </div>
+
+        {hasUnread && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleMarkAllAsRead}
+            className="flex items-center gap-1.5 text-primary text-(length:--font-size-body-sm) font-medium hover:underline cursor-pointer self-start sm:self-auto shrink-0"
+          >
+            <CheckCheck size={16} />
+            Mark all as read
+          </motion.button>
+        )}
       </div>
 
       <div className="space-y-3 sm:space-y-4">
@@ -98,7 +134,7 @@ function NotificationPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl border border-slate-100 p-8 sm:p-12 text-center text-(length:--font-size-body-sm) text-text-muted shadow-xs"
+            className="bg-primary-light rounded-2xl border border-stroke p-8 sm:p-12 text-center text-(length:--font-size-body-sm) text-text-muted shadow-xs"
           >
             No notifications available
           </motion.div>
@@ -113,7 +149,7 @@ function NotificationPage() {
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2, delay: index * 0.03 }}
               onClick={() => handleClick(notif)}
-              className={`p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all shadow-xs ${notif.isRead ? "bg-white border-slate-100 hover:border-slate-200" : "bg-info-light/40 border-info/30 hover:border-info/50"}`}
+              className={`p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all shadow-xs ${notif.isRead ? "bg-primary-light border-stroke hover:border-stroke/80" : "bg-info-light/40 border-info/30 hover:border-info/50"}`}
             >
               <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4">
                 <div className="space-y-1 min-w-0">
@@ -137,7 +173,7 @@ function NotificationPage() {
                     </p>
                   )}
                   <p className="text-(length:--font-size-caption) text-text-muted pt-1">
-                    {new Date(notif.createdAt).toLocaleString("id-ID")}
+                    {formatDateTime(notif.createdAt)}
                   </p>
                 </div>
 
@@ -157,7 +193,7 @@ function NotificationPage() {
           ))}
         </AnimatePresence>
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-5 py-4 bg-white border border-slate-100 rounded-2xl shadow-xs mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-5 py-4 bg-primary-light border border-stroke rounded-2xl shadow-xs mt-6">
             <p className="text-(length:--font-size-caption) text-text-muted">
               Page {page} of {totalPages}
             </p>
@@ -165,14 +201,14 @@ function NotificationPage() {
               <button
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 <ChevronLeft size={14} /> Prev
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                 disabled={page === totalPages}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 Next <ChevronRight size={14} />
               </button>

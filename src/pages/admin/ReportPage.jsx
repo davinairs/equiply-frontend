@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, } from "recharts";
-import { FileText, FileSpreadsheet, Calendar, ChevronLeft, ChevronRight, } from "lucide-react";
+import { FileText, FileSpreadsheet, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { exportToExcel } from "../../utils/exportExcel";
 import { exportToPdf } from "../../utils/exportPdf";
 import api from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 
-const monthNames = [ "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", ];
+const monthNames = 
+[ "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
 
 const PAGE_SIZE = 10;
 
@@ -14,7 +15,7 @@ const statusBadge = {
   pending: "bg-info-light text-info",
   approved: "bg-success-light text-success",
   rejected: "bg-error-light text-error",
-  returned: "bg-return-light text-return",
+  returned: "bg-accent-light text-accent",
 };
 
 function formatDate(dateStr) {
@@ -45,7 +46,7 @@ function generateColor(index) {
 const MonthlyTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white px-5 py-3.5 rounded-md shadow-lg border border-slate-100">
+      <div className="bg-primary-light px-5 py-3.5 rounded-md shadow-lg border border-stroke">
         <p className="text-text-primary text-(length:--font-size-caption) font-medium">
           {" "}
           Borrow{" "}
@@ -64,8 +65,8 @@ const StatusTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const dataItem = payload[0].payload;
     return (
-      <div className="bg-white px-5 py-3.5 rounded-md shadow-lg border border-slate-100">
-        <p className="text-text-primary text-(length:--font-size-caption) font-medium capitalize">
+      <div className="bg-primary-light px-5 py-3.5 rounded-md shadow-lg border border-stroke">
+        <p className="text-text-primary text-(length:--font-size-caption) font-medium lowercase">
           {dataItem.status}{" "}
         </p>
         <p className="text-primary text-(length:--font-size-h3) font-bold mt-0.5">
@@ -82,7 +83,7 @@ const TopEquipmentTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const dataItem = payload[0].payload;
     return (
-      <div className="bg-white px-5 py-3.5 rounded-md shadow-lg border border-slate-100">
+      <div className="bg-primary-light px-5 py-3.5 rounded-md shadow-lg border border-stroke">
         <p className="text-text-primary text-(length:--font-size-caption) font-medium">
           {" "}
           {dataItem.name}{" "}
@@ -101,7 +102,7 @@ const CategoryTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
-      <div className="bg-white px-5 py-3.5 rounded-md shadow-lg border border-slate-100">
+      <div className="bg-primary-light px-5 py-3.5 rounded-md shadow-lg border border-stroke">
         <p className="text-text-primary text-(length:--font-size-caption) font-medium">
           {" "}
           {data.name}{" "}
@@ -118,7 +119,7 @@ const CategoryTooltip = ({ active, payload }) => {
 
 function ReportPage() {
   const [requests, setRequests] = useState([]);
-  const [equipments, setEquipments] = useState([]);
+  const [equipment, setEquipment] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -131,12 +132,12 @@ function ReportPage() {
   useEffect(() => {
     Promise.all([
       api.get("/borrow-requests"),
-      api.get("/equipments"),
+      api.get("/equipment"),
       api.get("/users"),
     ])
       .then(([reqRes, eqRes, userRes]) => {
         setRequests(reqRes.data);
-        setEquipments(eqRes.data);
+        setEquipment(eqRes.data);
         setUsers(userRes.data);
       })
       .finally(() => setLoading(false));
@@ -153,10 +154,10 @@ function ReportPage() {
     );
   }
 
-  const getCompanyName = (userId) =>
-    users.find((u) => u.id === userId)?.companyName || "-";
+  const getUnitName = (userId) =>
+    users.find((u) => u.id === userId)?.unitName || "-";
   const getCategoryName = (equipmentId) =>
-    equipments.find((e) => e.id === equipmentId)?.categoryName || "-";
+    equipment.find((e) => e.id === equipmentId)?.categoryName || "-";
 
   const filteredRequests = requests.filter((r) => {
     if (!dateRange.start || !dateRange.end) return true;
@@ -190,10 +191,10 @@ function ReportPage() {
     (r) => r.borrowStatus === "returned",
   ).length;
   const overdue = filteredRequests.filter((r) => r.isOverdue).length;
-  const maintenance = equipments.filter(
+  const maintenance = equipment.filter(
     (e) => e.equipmentStatus === "maintenance",
   ).length;
-  const broken = equipments.filter(
+  const broken = equipment.filter(
     (e) => e.equipmentCondition === "broken",
   ).length;
 
@@ -206,10 +207,10 @@ function ReportPage() {
   const overdueNew = filteredRequests.filter(
     (r) => r.isOverdue && isWithinLastDay(r.dueDate),
   ).length;
-  const maintenanceNew = equipments.filter(
+  const maintenanceNew = equipment.filter(
     (e) => e.equipmentStatus === "maintenance" && isWithinLastDay(e.updatedAt),
   ).length;
-  const brokenNew = equipments.filter(
+  const brokenNew = equipment.filter(
     (e) => e.equipmentCondition === "broken" && isWithinLastDay(e.updatedAt),
   ).length;
 
@@ -297,7 +298,7 @@ function ReportPage() {
   const handleExportExcel = () => {
     const dataToExport = filteredRequests.map((r) => ({
       User: r.fullName,
-      Company: getCompanyName(r.userId),
+      Unit: getUnitName(r.userId),
       Equipment: r.equipmentName,
       Category: getCategoryName(r.equipmentId),
       "Borrow Date": formatDate(r.borrowDate),
@@ -311,7 +312,7 @@ function ReportPage() {
   const handleExportPdf = () => {
     const columns = [
       "User",
-      "Company",
+      "Unit",
       "Equipment",
       "Category",
       "Borrow Date",
@@ -320,7 +321,7 @@ function ReportPage() {
     ];
     const rows = filteredRequests.map((r) => [
       r.fullName,
-      getCompanyName(r.userId),
+      getUnitName(r.userId),
       r.equipmentName,
       getCategoryName(r.equipmentId),
       formatDate(r.borrowDate),
@@ -359,7 +360,7 @@ function ReportPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: idx * 0.05 }}
-            className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5"
+            className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-5"
           >
             <p className="text-(length:--font-size-body-sm) text-text-muted">
               {card.label}
@@ -377,9 +378,14 @@ function ReportPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-6">
-        <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 p-4 sm:p-5">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="lg:col-span-3 bg-primary-light rounded-2xl border border-stroke p-4 sm:p-5 shadow-xs"
+        >
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2 relative">
-            <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
+            <h3 className="text-(length:--font-size-h3) font-semibold">
               Monthly Borrow
             </h3>
             <div className="self-start sm:self-auto">
@@ -388,59 +394,75 @@ function ReportPage() {
                   setTempRange(dateRange);
                   setShowDatePicker(!showDatePicker);
                 }}
-                className="flex items-center gap-2 border border-slate-200 px-3 py-1.5 rounded-xl text-(length:--font-size-caption) text-text-muted hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex items-center gap-2 border border-stroke px-3 py-1.5 rounded-xl text-(length:--font-size-caption) text-text-muted hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <Calendar size={14} /> {dateRangeLabel}
               </button>
-              {showDatePicker && (
-                <div className="absolute right-0 top-11 z-10 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 w-64 sm:w-72 max-w-[85vw]">
-                  <label className="block text-(length:--font-size-caption) font-medium text-text-muted mb-1">
-                    From
-                  </label>
-                  <input
-                    type="date"
-                    value={tempRange.start}
-                    onChange={(e) =>
-                      setTempRange({ ...tempRange, start: e.target.value })
-                    }
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-(length:--font-size-body-sm) text-text-primary mb-3 focus:outline-none focus:border-primary"
-                  />
-                  <label className="block text-(length:--font-size-caption) font-medium text-text-muted mb-1">
-                    To
-                  </label>
-                  <input
-                    type="date"
-                    value={tempRange.end}
-                    onChange={(e) =>
-                      setTempRange({ ...tempRange, end: e.target.value })
-                    }
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-(length:--font-size-body-sm) text-text-primary mb-4 focus:outline-none focus:border-primary"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={applyDateRange}
-                      className="flex-1 bg-primary text-white py-2 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-90 cursor-pointer"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      onClick={resetDateRange}
-                      className="flex-1 border border-slate-200 text-text-muted py-2 rounded-xl text-(length:--font-size-body-sm) hover:bg-slate-50 cursor-pointer"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
-              )}
+
+              <AnimatePresence>
+                {showDatePicker && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-10 z-20 bg-primary-light border border-stroke rounded-2xl shadow-xl p-4 w-64 sm:w-72 max-w-[85vw]"
+                  >
+                    <label className="block text-(length:--font-size-caption) font-medium text-text-muted mb-1">
+                      From
+                    </label>
+                    <input
+                      type="date"
+                      value={tempRange.start}
+                      onChange={(e) =>
+                        setTempRange({ ...tempRange, start: e.target.value })
+                      }
+                      className="w-full border border-stroke rounded-xl px-3 py-2 text-(length:--font-size-body-sm) mb-3 focus:outline-none focus:border-primary"
+                    />
+                    <label className="block text-(length:--font-size-caption) font-medium text-text-muted mb-1">
+                      To
+                    </label>
+                    <input
+                      type="date"
+                      value={tempRange.end}
+                      onChange={(e) =>
+                        setTempRange({ ...tempRange, end: e.target.value })
+                      }
+                      className="w-full border border-stroke rounded-xl px-3 py-2 text-(length:--font-size-body-sm) mb-4 focus:outline-none focus:border-primary"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={applyDateRange}
+                        className="flex-1 bg-primary text-primary-light py-2 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-95 transition-opacity cursor-pointer"
+                      >
+                        Apply
+                      </button>
+                      <button
+                        onClick={resetDateRange}
+                        className="flex-1 border border-stroke text-text-muted py-2 rounded-xl text-(length:--font-size-body-sm) hover:bg-slate-50 transition-colors cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
+
           <ResponsiveContainer width="100%" height={250} minWidth={0}>
             <AreaChart
               data={monthlyData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
             >
               <defs>
-                <linearGradient id="reportGradient" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  id="dashboardGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="5%" stopColor="#155DFC" stopOpacity={0.25} />
                   <stop offset="95%" stopColor="#155DFC" stopOpacity={0} />
                 </linearGradient>
@@ -461,7 +483,6 @@ function ReportPage() {
                 tick={{ fontSize: 12, fill: "#64748B" }}
                 axisLine={false}
                 tickLine={false}
-                dx={-10}
               />
               <Tooltip content={<MonthlyTooltip />} />
               <Area
@@ -469,12 +490,13 @@ function ReportPage() {
                 dataKey="borrow"
                 stroke="#155DFC"
                 strokeWidth={2.5}
-                fill="url(#reportGradient)"
+                fill="url(#dashboardGradient)"
               />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-4 sm:p-5">
+        </motion.div>
+
+        <div className="lg:col-span-2 bg-primary-light rounded-2xl border border-stroke p-4 sm:p-5">
           <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary mb-2">
             Borrow Status
           </h3>
@@ -527,7 +549,7 @@ function ReportPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-6">
-        <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 p-4 sm:p-5">
+        <div className="lg:col-span-3 bg-primary-light rounded-2xl border border-stroke p-4 sm:p-5">
           <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary mb-2">
             Top Borrowed Equipment
           </h3>
@@ -582,7 +604,7 @@ function ReportPage() {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.25 }}
-          className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-xs flex flex-col justify-between"
+          className="lg:col-span-2 bg-primary-light rounded-2xl border border-stroke p-4 sm:p-5 shadow-xs flex flex-col justify-between"
         >
           <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
             Borrow By Category
@@ -658,13 +680,13 @@ function ReportPage() {
       <div className="flex flex-row items-center gap-3 mt-6">
         <button
           onClick={handleExportPdf}
-          className="inline-flex items-center justify-center gap-1.5 bg-primary text-white px-3.5 py-2 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-90 cursor-pointer shadow-sm"
+          className="inline-flex items-center justify-center gap-1.5 bg-primary text-primary-light px-3.5 py-2 rounded-lg text-(length:--font-size-body-sm) font-medium hover:opacity-90 cursor-pointer shadow-xs"
         >
           <FileText size={15} /> Export PDF
         </button>
         <button
           onClick={handleExportExcel}
-          className="inline-flex items-center justify-center gap-1.5 bg-primary text-white px-3.5 py-2 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-90 cursor-pointer shadow-sm"
+          className="inline-flex items-center justify-center gap-1.5 bg-primary text-primary-light px-3.5 py-2 rounded-lg text-(length:--font-size-body-sm) font-medium hover:opacity-90 cursor-pointer shadow-xs"
         >
           <FileSpreadsheet size={15} /> Export Excel
         </button>
@@ -674,7 +696,7 @@ function ReportPage() {
         initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-6 shadow-sm mt-6"
+        className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-6 shadow-xs mt-6"
       >
         <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
           Borrow History
@@ -684,16 +706,16 @@ function ReportPage() {
         </p>
         <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
           <table className="w-full min-w-225 text-left text-(length:--font-size-body-sm)">
-            <thead className="text-text-muted border-b border-slate-100">
+            <thead className="text-text-muted border-b border-stroke">
               <tr>
-                <th className="pb-3 py-3 pl-3 font-medium w-[15%]">User</th>
-                <th className="pb-3 py-3 font-medium w-[13%]">Company</th>
-                <th className="pb-3 py-3 font-medium w-[17%]">Equipment</th>
-                <th className="pb-3 py-3 font-medium w-[12%]">Category</th>
-                <th className="pb-3 py-3 font-medium w-[11%]">Borrow Date</th>
-                <th className="pb-3 py-3 font-medium w-[11%]">Due Date</th>
-                <th className="pb-3 py-3 font-medium w-[11%]">Return Date</th>
-                <th className="pb-3 py-3 pr-3 font-medium w-[10%]">Status</th>
+                <th className="py-3 px-4 font-medium w-[15%]">User</th>
+                <th className="py-3 px-4 font-medium w-[13%]">Unit</th>
+                <th className="py-3 px-4 font-medium w-[17%]">Equipment</th>
+                <th className="py-3 px-4 font-medium w-[12%]">Category</th>
+                <th className="py-3 px-4 font-medium w-[13%]">Borrow Date</th>
+                <th className="py-3 px-4 font-medium w-[11%]">Due Date</th>
+                <th className="py-3 px-4 font-medium w-[11%]">Return Date</th>
+                <th className="py-3 px-4 font-medium w-[8%]">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -705,18 +727,26 @@ function ReportPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, delay: idx * 0.03 }}
-                    className="border-b border-slate-50 text-text-primary hover:bg-slate-50/50 transition-colors"
+                    className="border-b border-stroke text-text-primary hover:bg-slate-50/50 transition-colors font-medium"
                   >
-                    <td className="py-4 pl-3 font-medium">{r.fullName}</td>
-                    <td className="py-4 font-medium">{getCompanyName(r.userId)}</td>
-                    <td className="py-4 font-medium">{r.equipmentName}</td>
-                    <td className="py-4 font-medium">{getCategoryName(r.equipmentId)}</td>
-                    <td className="py-4 font-medium">{formatDate(r.borrowDate)}</td>
-                    <td className="py-4 font-medium">{formatDate(r.dueDate)}</td>
-                    <td className="py-4 font-medium">{formatDate(r.returnDate)}</td>
-                    <td className="py-4 pr-3">
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-2">{r.fullName}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-2">{getUnitName(r.userId)}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-2">{r.equipmentName}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-2">{getCategoryName(r.equipmentId)}</p>
+                    </td>
+                    <td className="py-4 px-4">{formatDate(r.borrowDate)}</td>
+                    <td className="py-4 px-4">{formatDate(r.dueDate)}</td>
+                    <td className="py-4 px-4">{formatDate(r.returnDate)}</td>
+                    <td className="py-4 px-4">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium capitalize ${statusBadge[r.borrowStatus]}`}
+                        className={`px-2.5 py-1 rounded-md text-(length:--font-size-caption) lowercase inline-block ${statusBadge[r.borrowStatus]}`}
                       >
                         {r.borrowStatus}
                       </span>
@@ -727,7 +757,7 @@ function ReportPage() {
               {paginatedRequests.length === 0 && (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-text-muted">
-                    Belum ada data
+                    No Data Found
                   </td>
                 </tr>
               )}
@@ -735,7 +765,7 @@ function ReportPage() {
           </table>
         </div>
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 sm:px-5 py-4 bg-white border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 sm:px-5 py-4 bg-primary-light border-t border-stroke">
             <p className="text-(length:--font-size-caption) text-text-muted">
               Page {page} of {totalPages}
             </p>
@@ -743,14 +773,14 @@ function ReportPage() {
               <button
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 <ChevronLeft size={14} /> Prev
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                 disabled={page === totalPages}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 Next <ChevronRight size={14} />
               </button>

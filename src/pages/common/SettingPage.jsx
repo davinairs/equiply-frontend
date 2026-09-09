@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import api from "../../services/api";
 
 const inputClass =
-  "w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-(length:--font-size-body-sm) focus:outline-none focus:ring-2 focus:ring-primary";
+  "w-full border border-stroke rounded-lg px-3.5 py-2.5 text-(length:--font-size-body-sm) focus:outline-none focus:ring-2 focus:ring-primary";
 const labelClass =
   "block text-(length:--font-size-body-sm) font-medium text-text-primary mb-1.5";
 
@@ -78,17 +78,6 @@ function SettingPage() {
     fetchProfile();
   }, []);
 
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (isProfileChanged || isPasswordFormFilled) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  });
-
   const fetchProfile = async () => {
     try {
       setLoading(true);
@@ -125,6 +114,17 @@ function SettingPage() {
     passwordForm.oldPassword.trim() !== "" &&
     passwordForm.newPassword.trim() !== "" &&
     passwordForm.repeatPassword.trim() !== "";
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isProfileChanged || isPasswordFormFilled) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isProfileChanged, isPasswordFormFilled]);
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -173,9 +173,6 @@ function SettingPage() {
     } catch (err) {
       const status = err.response?.status;
       const backendMessage = err.response?.data?.message;
-      // Backend biasanya balas 400/401 kalau old password tidak cocok.
-      // Kalau backend tidak kirim pesan spesifik, tetap kasih tahu
-      // penyebab paling umum daripada pesan generik.
       const fallbackMessage =
         status === 400 || status === 401
           ? "Old password is incorrect"
@@ -197,8 +194,7 @@ function SettingPage() {
     );
   }
 
-  const initial =
-    profile?.fullName?.charAt(0).toUpperCase() || "?";
+  const initial = profile?.fullName?.charAt(0).toUpperCase() || "?";
 
   return (
     <motion.div
@@ -218,9 +214,9 @@ function SettingPage() {
         initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-6 mt-6 shadow-sm"
+        className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-6 mt-6 shadow-xs"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-stroke">
           <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
             Account Information
           </h3>
@@ -244,14 +240,14 @@ function SettingPage() {
               <img
                 src={imagePreview || profile.profileImage}
                 alt={profile?.fullName}
-                className="w-14 h-14 rounded-full object-cover shadow-sm shrink-0"
+                className="w-14 h-14 rounded-full object-cover shadow-xs shrink-0"
               />
             ) : (
               <div className="w-14 h-14 rounded-full bg-primary text-primary-light flex items-center justify-center font-semibold text-(length:--font-size-h3) shrink-0">
                 {initial}
               </div>
             )}
-            <label className="border border-slate-200 text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) font-medium cursor-pointer hover:bg-slate-50 transition-colors">
+            <label className="border border-stroke text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) font-medium cursor-pointer hover:bg-slate-50 transition-colors">
               Change Profile
               <input
                 type="file"
@@ -303,7 +299,7 @@ function SettingPage() {
               }}
               type="submit"
               disabled={savingProfile || !isProfileChanged}
-              className="w-full sm:w-auto bg-primary text-white px-5 py-2.5 rounded-lg text-(length:--font-size-body-sm) font-medium hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm cursor-pointer transition-all"
+              className="w-full sm:w-auto bg-primary text-primary-light px-5 py-2.5 rounded-lg text-(length:--font-size-body-sm) font-medium hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs cursor-pointer transition-all"
             >
               {savingProfile ? "Saving..." : "Save Change"}
             </motion.button>
@@ -315,9 +311,9 @@ function SettingPage() {
         initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-6 mt-6 shadow-sm"
+        className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-6 mt-6 shadow-xs"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-stroke">
           <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
             Change Password
           </h3>
@@ -327,7 +323,7 @@ function SettingPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="inline-flex self-start sm:self-auto items-center gap-1.5 text-(length:--font-size-caption) text-yellow-700 bg-warning-light px-2.5 py-1 rounded-full"
+                className="inline-flex self-start sm:self-auto items-center gap-1.5 text-(length:--font-size-caption) text-warning bg-warning-light px-2.5 py-1 rounded-full"
               >
                 <AlertTriangle size={12} /> Unsaved changes
               </motion.span>
@@ -388,7 +384,7 @@ function SettingPage() {
               }}
               type="submit"
               disabled={savingPassword || !isPasswordFormFilled}
-              className="w-full sm:w-auto bg-primary text-white px-5 py-2.5 rounded-lg text-(length:--font-size-body-sm) font-medium hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm cursor-pointer transition-all"
+              className="w-full sm:w-auto bg-primary text-primary-light px-5 py-2.5 rounded-lg text-(length:--font-size-body-sm) font-medium hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs cursor-pointer transition-all"
             >
               {savingPassword ? "Saving..." : "Save Change"}
             </motion.button>

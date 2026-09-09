@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
-function CompanyModal({
+function UnitModal({
   show,
   editingId,
   form,
@@ -30,7 +30,7 @@ function CompanyModal({
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary">
-                {editingId ? "Edit Company" : "New Company"}
+                {editingId ? "Edit Unit" : "New Unit"}
               </h3>
               <button
                 onClick={onClose}
@@ -43,12 +43,12 @@ function CompanyModal({
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
                 <label className="block text-(length:--font-size-body-sm) font-medium text-text-primary mb-1.5">
-                  Company Name
+                  Unit Name
                 </label>
                 <input
-                  value={form.companyName}
+                  value={form.unitName}
                   onChange={(e) =>
-                    setForm({ ...form, categoryName: e.target.value })
+                    setForm({ ...form, unitName: e.target.value })
                   }
                   className="w-full border border-stroke bg-primary-light rounded-lg px-3.5 py-2.5 text-(length:--font-size-body-md) text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
                   required
@@ -82,4 +82,4 @@ function CompanyModal({
   );
 }
 
-export default CompanyModal;
+export default UnitModal;

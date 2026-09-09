@@ -2,9 +2,9 @@
 
 @theme {
   --color-primary: #155DFC;
-  --color-secondary: #0BEAFE;
-  --color-primary-light: #F9F8FF;
-  --color-sidebar-active: #DBEAFE;
+  --color-secondary: #DBEAFE;
+  --color-background: #F8FBFF;
+  --color-primary-light: #FFFFFF;
 
   --color-error: #B91C1C;
   --color-error-light: #FEE2E2;
@@ -14,17 +14,17 @@
   --color-success-light: #DCFCE7;
   --color-info: #004FC4;
   --color-info-light: #DBDDFF;
-  --color-return: #C2410C;
-  --color-return-light: #FFEDD5;
-
+  --color-accent: #C2410C;
+  --color-accent-light: #FFEDD5;
   --color-text-primary: #0F172A;
   --color-text-muted: #64748B;
+  --color-stroke: #E5E7EB;
 
   --font-body: "Inter", sans-serif;
 
 
   --font-size-h1: 1.875rem;
-  --font-size-h2: 1.44rem;
+  --font-size-h2: 1.5rem;
   --font-size-h3: 1.125rem; 
   --font-size-body-lg: 1rem;
   --font-size-body-md: 0.875rem;

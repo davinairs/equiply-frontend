@@ -10,7 +10,7 @@ const statusBadge = {
   pending: "bg-info-light text-info",
   approved: "bg-success-light text-success",
   rejected: "bg-error-light text-error",
-  returned: "bg-return-light text-return",
+  returned: "bg-accent-light text-accent",
 };
 
 function formatDate(dateStr) {
@@ -80,7 +80,7 @@ function AdminBorrowRequestsPage() {
 
   const handleForceReturn = async (id) => {
     try {
-      await api.patch(`/borrow-requests/${id}/force-return`);
+      await api.patch(`/borrow-requests/${id}/return`);
       setReviewTarget(null);
       fetchRequests();
     } catch (err) {
@@ -88,7 +88,7 @@ function AdminBorrowRequestsPage() {
     }
   };
 
-const filteredRequests = filterStatus
+  const filteredRequests = filterStatus
     ? requests.filter((r) => r.borrowStatus === filterStatus)
     : requests;
 
@@ -101,10 +101,7 @@ const filteredRequests = filterStatus
     return 0;
   });
 
-  const totalPages = Math.max(
-    Math.ceil(sortedRequests.length / PAGE_SIZE),
-    1,
-  );
+  const totalPages = Math.max(Math.ceil(sortedRequests.length / PAGE_SIZE), 1);
 
   const paginatedRequests = sortedRequests.slice(
     (page - 1) * PAGE_SIZE,
@@ -191,7 +188,7 @@ const filteredRequests = filterStatus
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.05 }}
             whileHover={{ y: -3, transition: { duration: 0.2 } }}
-            className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200"
+            className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-200"
           >
             <p className="text-(length:--font-size-body-sm) text-text-muted">
               {card.label}
@@ -212,7 +209,7 @@ const filteredRequests = filterStatus
         <div className="relative inline-block">
           <button
             onClick={() => setOpenStatusDropdown(!openStatusDropdown)}
-            className="flex items-center justify-between gap-6 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-sm cursor-pointer min-w-35"
+            className="flex items-center justify-between gap-6 bg-primary-light border border-stroke rounded-xl px-4 py-2.5 text-(length:--font-size-body-sm) text-text-primary hover:border-slate-300 shadow-xs cursor-pointer min-w-35"
           >
             <span>{selectedStatusLabel}</span>
             <ChevronDown
@@ -227,7 +224,7 @@ const filteredRequests = filterStatus
                 animate={{ opacity: 1, y: 4, scale: 1 }}
                 exit={{ opacity: 0, y: -5, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 top-full z-30 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
+                className="absolute left-0 top-full z-30 bg-primary-light border border-stroke rounded-2xl shadow-xl py-2 min-w-40 max-w-[85vw] overflow-hidden"
               >
                 {[
                   { label: "All Status", value: "" },
@@ -261,21 +258,21 @@ const filteredRequests = filterStatus
         initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-6 shadow-sm mt-5"
+        className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-6 shadow-xs mt-5"
       >
-        <h3 className="text-[length:(--font-size-h3)] font-semibold text-text-primary mb-5">
+        <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary mb-5">
           Borrow Requests
         </h3>
         <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
           <table className="w-full min-w-170 text-left text-(length:--font-size-body-sm)">
-            <thead className="text-text-muted border-b border-slate-100">
+            <thead className="text-text-muted border-b border-stroke">
               <tr>
-                <th className="pb-3 pl-3 font-medium w-[18%]">User</th>
-                <th className="pb-3 font-medium w-[22%]">Equipment</th>
-                <th className="pb-3 font-medium w-[18%]">Borrow Date</th>
-                <th className="pb-3 font-medium w-[18%]">Due Date</th>
-                <th className="pb-3 font-medium w-[12%]">Status</th>
-                <th className="pb-3 pr-3 font-medium w-[12%]">Action</th>
+                <th className="py-3 px-4 font-medium w-[18%]">User</th>
+                <th className="py-3 px-4 font-medium w-[22%]">Equipment</th>
+                <th className="py-3 px-4 font-medium w-[16%]">Borrow Date</th>
+                <th className="py-3 px-4 font-medium w-[16%]">Due Date</th>
+                <th className="py-3 px-4 font-medium w-[16%]">Status</th>
+                <th className="py-3 px-4 font-medium w-[12%]">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -287,12 +284,18 @@ const filteredRequests = filterStatus
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, delay: idx * 0.03 }}
-                    className="border-b border-slate-50 text-text-primary hover:bg-slate-50/50 transition-colors"
+                    className="border-b border-stroke text-text-primary hover:bg-slate-50/50 transition-colors font-medium"
                   >
-                    <td className="py-4 pl-3 font-medium">{r.fullName}</td>
-                    <td className="py-4 font-medium">{r.equipmentName}</td>
-                    <td className="py-4 font-medium">{formatDate(r.borrowDate)}</td>
-                    <td className="py-4 font-medium">
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-1">{r.fullName}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-1">{r.equipmentName}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      {formatDate(r.borrowDate)}
+                    </td>
+                    <td className="py-4 px-4">
                       {formatDate(r.dueDate)}
                       {r.isOverdue && (
                         <span className="text-error text-(length:--font-size-caption) ml-1">
@@ -300,18 +303,18 @@ const filteredRequests = filterStatus
                         </span>
                       )}
                     </td>
-                    <td className="py-4 font-medium">
+                    <td className="py-4 px-4">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium capitalize inline-block ${statusBadge[r.borrowStatus]}`}
+                        className={`px-2.5 py-1 rounded-md text-(length:--font-size-caption) lowercase inline-block ${statusBadge[r.borrowStatus]}`}
                       >
                         {r.borrowStatus}
                       </span>
                     </td>
-                    <td className="py-4 pr-3">
+                    <td className="py-4 px-4">
                       <button
                         type="button"
                         onClick={() => setReviewTarget(r)}
-                        className="text-primary font-medium hover:underline inline-flex items-center gap-1 cursor-pointer"
+                        className="text-primary hover:underline inline-flex items-center gap-1 cursor-pointer"
                       >
                         Review
                       </button>
@@ -322,7 +325,7 @@ const filteredRequests = filterStatus
               {paginatedRequests.length === 0 && (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-text-muted">
-                    No requests found
+                    No Requests Found
                   </td>
                 </tr>
               )}
@@ -330,7 +333,7 @@ const filteredRequests = filterStatus
           </table>
         </div>
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 sm:px-6 py-4 border-t border-slate-50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 sm:px-6 py-4 border-t border-stroke">
             <p className="text-(length:--font-size-caption) text-text-muted">
               Page {page} of {totalPages}
             </p>
@@ -338,14 +341,14 @@ const filteredRequests = filterStatus
               <button
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 <ChevronLeft size={14} /> Prev
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                 disabled={page === totalPages}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3 py-1.5 rounded-lg text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 Next <ChevronRight size={14} />
               </button>

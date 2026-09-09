@@ -17,13 +17,13 @@ function isWithinLastDay(dateStr) {
 
 function UserManagementPage() {
   const [users, setUsers] = useState([]);
-  const [companies, setCompanies] = useState([]);
+  const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailItem, setDetailItem] = useState(null);
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    companyId: "",
+    unitId: "",
     username: "",
     fullName: "",
     email: "",
@@ -47,13 +47,12 @@ function UserManagementPage() {
 
   const fetchData = async () => {
     try {
-      const [userRes, companyRes] = await Promise.all([
+      const [unitRes, userRes] = await Promise.all([
+        api.get("/units"),
         api.get("/users"),
-        api.get("/companies"),
       ]);
-
       setUsers(userRes.data);
-      setCompanies(companyRes.data);
+      setUnits(unitRes.data);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to load data");
     } finally {
@@ -63,7 +62,7 @@ function UserManagementPage() {
 
   const openCreateForm = () => {
     setForm({
-      companyId: "",
+      unitId: "",
       username: "",
       fullName: "",
       email: "",
@@ -182,14 +181,14 @@ function UserManagementPage() {
     },
   ];
 
-const filteredUsers = users.filter((u) => {
+  const filteredUsers = users.filter((u) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return (
       u.username?.toLowerCase().includes(q) ||
       u.fullName?.toLowerCase().includes(q) ||
       u.email?.toLowerCase().includes(q) ||
-      u.companyName?.toLowerCase().includes(q)
+      u.unitName?.toLowerCase().includes(q)
     );
   });
 
@@ -244,11 +243,12 @@ const filteredUsers = users.filter((u) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={openCreateForm}
-          className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-2xl text-(length:--font-size-body-sm) font-medium hover:opacity-95 shadow-sm cursor-pointer self-start sm:self-auto"
+          className="flex items-center justify-center gap-2 bg-primary text-primary-light px-5 py-2.5 rounded-xl text-(length:--font-size-body-sm) font-medium hover:opacity-95 shadow-xs cursor-pointer self-start sm:self-auto"
         >
           <Plus size={16} /> Add User
         </motion.button>
       </div>
+
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
         {statCards.map((card, idx) => (
           <motion.div
@@ -257,7 +257,7 @@ const filteredUsers = users.filter((u) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.05 }}
             whileHover={{ y: -3, transition: { duration: 0.2 } }}
-            className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200"
+            className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-200"
           >
             <p className="text-(length:--font-size-body-sm) text-text-muted">
               {card.label}
@@ -279,7 +279,7 @@ const filteredUsers = users.filter((u) => {
         editingId={null}
         form={form}
         setForm={setForm}
-        companies={companies}
+        units={units}
         imageFile={imageFile}
         setImageFile={setImageFile}
         onSubmit={handleSubmit}
@@ -291,22 +291,22 @@ const filteredUsers = users.filter((u) => {
         initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-6 shadow-sm mt-6"
+        className="bg-primary-light rounded-2xl border border-stroke p-4 sm:p-6 shadow-xs mt-6"
       >
         <h3 className="text-(length:--font-size-h3) font-semibold text-text-primary mb-4">
           User List
         </h3>
         <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
           <table className="w-full min-w-190 text-left text-(length:--font-size-body-sm)">
-            <thead className="text-text-muted border-b border-slate-100">
+            <thead className="text-text-muted border-b border-stroke">
               <tr>
-                <th className="pb-3 font-medium pl-3 w-[14%]">Username</th>
-                <th className="pb-3 font-medium w-[14%]">Full Name</th>
-                <th className="pb-3 font-medium w-[18%]">Company</th>
-                <th className="pb-3 font-medium w-[20%]">Email</th>
-                <th className="pb-3 font-medium w-[10%]">Role</th>
-                <th className="pb-3 font-medium w-[12%]">Status</th>
-                <th className="pb-3 font-medium pr-3 w-[12%]">Action</th>
+                <th className="py-3 px-4 font-medium w-[14%]">Username</th>
+                <th className="py-3 px-4 font-medium w-[14%]">Full Name</th>
+                <th className="py-3 px-4 font-medium w-[18%]">Unit</th>
+                <th className="py-3 px-4 font-medium w-[20%]">Email</th>
+                <th className="py-3 px-4 font-medium w-[10%]">Role</th>
+                <th className="py-3 px-4 font-medium w-[12%]">Status</th>
+                <th className="py-3 px-4 font-medium w-[12%]">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -318,33 +318,43 @@ const filteredUsers = users.filter((u) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, delay: idx * 0.03 }}
-                    className="border-b border-slate-50 text-text-primary hover:bg-slate-50/50 transition-colors"
+                    className="border-b border-stroke text-text-primary hover:bg-slate-50/50 transition-colors font-medium"
                   >
-                    <td className="py-4 pl-3 font-medium">{u.username}</td>
-                    <td className="py-4 font-medium">{u.fullName}</td>
-                    <td className="py-4 font-medium">{u.companyName}</td>
-                    <td className="py-4 font-medium">{u.email}</td>
-                    <td className="py-4 font-medium">{u.role}</td>
-                    <td className="py-4 pr-3">
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-1">{u.username}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-1">{u.fullName}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-2">{u.unitName || "-"}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="line-clamp-1">{u.email}</p>
+                    </td>
+                    <td className="py-4 px-4">{u.role}</td>
+                    <td className="py-4 px-4">
                       <span
-                        className={`px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium capitalize inline-block ${u.status === "active" ? "bg-success-light text-success" : "bg-slate-100 text-slate-500"}`}
+                        className={`px-2.5 py-1 rounded-md text-(length:--font-size-caption) lowercase inline-block ${u.status === "active" ? "bg-success-light text-success" : "bg-error-light text-error"}`}
                       >
                         {u.status}
                       </span>
                     </td>
-                    <td className="py-4 pr-3">
-                      <div className="flex items-center justify-start gap-3">
+                    <td className="py-4 px-4">
+                      <div className="flex items-center justify-start gap-4">
                         <button
                           onClick={() => setDetailItem(u)}
-                          className="text-text-muted hover:text-primary transition-colors cursor-pointer"
+                          className="text-primary"
                           title="View"
                         >
                           <Eye size={17} />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(u)}
-                          className={`transition-colors cursor-pointer ${u.status === "active" ? "text-text-muted hover:text-error" : "text-text-muted hover:text-success"}`}
-                          title={ u.status === "active" ? "Deactivate" : "Activate"}
+                          className={`${u.status === "active" ? "text-error" : "text-success"}`}
+                          title={
+                            u.status === "active" ? "Deactivate" : "Activate"
+                          }
                         >
                           <Power size={16} />
                         </button>
@@ -364,7 +374,7 @@ const filteredUsers = users.filter((u) => {
           </table>
         </div>
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 sm:px-6 py-4 border-t border-slate-50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 sm:px-6 py-4 border-t border-stroke">
             <p className="text-(length:--font-size-caption) text-text-muted">
               Page {page} of {totalPages}
             </p>
@@ -372,14 +382,14 @@ const filteredUsers = users.filter((u) => {
               <button
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 <ChevronLeft size={14} /> Prev
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                 disabled={page === totalPages}
-                className="flex items-center gap-1 border border-slate-200 text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 border border-stroke text-text-muted px-3.5 py-1.5 rounded-xl text-(length:--font-size-caption) hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 Next <ChevronRight size={14} />
               </button>

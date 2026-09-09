@@ -30,7 +30,7 @@ function EquipmentDetailModal({ equipment, onClose }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="relative bg-white rounded-2xl border border-slate-100 max-w-md w-full p-4 sm:p-6 text-left shadow-xl z-10 max-h-[90vh] overflow-y-auto"
+            className="relative bg-primary-light text-text-primary rounded-2xl border border-stroke max-w-md w-full p-4 sm:p-6 text-left shadow-xl z-10 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-(length:--font-size-h4) font-semibold text-text-primary">
@@ -48,10 +48,10 @@ function EquipmentDetailModal({ equipment, onClose }) {
               <img
                 src={equipment.equipmentImage}
                 alt={equipment.equipmentName}
-                className="w-full h-40 sm:h-48 object-contain bg-slate-50 rounded-xl mb-4 border border-slate-100"
+                className="w-full h-40 sm:h-48 object-contain bg-primary-light rounded-xl mb-4 border border-stroke"
               />
             ) : (
-              <div className="w-full h-40 sm:h-48 bg-slate-50 rounded-xl mb-4 flex items-center justify-center text-text-muted text-(length:--font-size-body-sm) border border-slate-100">
+              <div className="w-full h-40 sm:h-48 bg-primary-light rounded-xl mb-4 flex items-center justify-center text-text-muted text-(length:--font-size-body-sm) border border-stroke">
                 No Photo
               </div>
             )}
@@ -59,24 +59,34 @@ function EquipmentDetailModal({ equipment, onClose }) {
             <div className="space-y-3 text-(length:--font-size-body-sm)">
               <div className="grid grid-cols-[100px_1fr] gap-2">
                 <span className="text-text-muted">Name</span>
-                <span className="font-medium text-text-primary text-left wrap-break-word">{equipment.equipmentName}</span>
+                <span className="font-medium text-text-primary text-left wrap-break-word">
+                  {equipment.equipmentName}
+                </span>
               </div>
               <div className="grid grid-cols-[100px_1fr] gap-2">
                 <span className="text-text-muted">Serial Number</span>
-                <span className="font-medium text-text-primary text-left wrap-break-word">{equipment.serialNumber}</span>
+                <span className="font-medium text-text-primary text-left wrap-break-word">
+                  {equipment.serialNumber}
+                </span>
               </div>
               <div className="grid grid-cols-[100px_1fr] gap-2">
                 <span className="text-text-muted">Category</span>
-                <span className="font-medium text-text-primary text-left wrap-break-word">{equipment.categoryName}</span>
+                <span className="font-medium text-text-primary text-left wrap-break-word">
+                  {equipment.categoryName}
+                </span>
               </div>
               <div className="grid grid-cols-[100px_1fr] gap-2">
                 <span className="text-text-muted">Location</span>
-                <span className="font-medium text-text-primary text-left wrap-break-word">{equipment.location || "-"}</span>
+                <span className="font-medium text-text-primary text-left wrap-break-word">
+                  {equipment.location || "-"}
+                </span>
               </div>
               <div className="grid grid-cols-[100px_1fr] gap-2 items-center">
                 <span className="text-text-muted">Condition</span>
                 <div className="text-left">
-                  <span className={`inline-block px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium capitalize ${conditionBadge[equipment.equipmentCondition]}`}>
+                  <span
+                    className={`inline-block px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium lowercase ${conditionBadge[equipment.equipmentCondition]}`}
+                  >
                     {equipment.equipmentCondition}
                   </span>
                 </div>
@@ -84,7 +94,9 @@ function EquipmentDetailModal({ equipment, onClose }) {
               <div className="grid grid-cols-[100px_1fr] gap-2 items-center">
                 <span className="text-text-muted">Status</span>
                 <div className="text-left">
-                  <span className={`inline-block px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium capitalize ${statusBadge[equipment.equipmentStatus]}`}>
+                  <span
+                    className={`inline-block px-2.5 py-1 rounded-md text-(length:--font-size-caption) font-medium lowercase ${statusBadge[equipment.equipmentStatus]}`}
+                  >
                     {equipment.equipmentStatus}
                   </span>
                 </div>
@@ -92,7 +104,9 @@ function EquipmentDetailModal({ equipment, onClose }) {
               {equipment.description && (
                 <div className="grid grid-cols-[100px_1fr] gap-2 pt-1">
                   <span className="text-text-muted">Description</span>
-                  <p className="text-text-primary text-left wrap-break-word">{equipment.description}</p>
+                  <p className="text-text-primary text-left wrap-break-word">
+                    {equipment.description}
+                  </p>
                 </div>
               )}
             </div>
