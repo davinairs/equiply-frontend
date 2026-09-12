@@ -194,7 +194,9 @@ function EquipmentModal({
                   {[
                     { label: "New", value: "new" },
                     { label: "Good", value: "good" },
-                    { label: "Broken", value: "broken" },
+                    ...(editingId
+                      ? [{ label: "Broken", value: "broken" }]
+                      : []),
                   ].map((cond) => (
                     <div
                       key={cond.value}
